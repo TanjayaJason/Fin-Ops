@@ -85,7 +85,7 @@ Semua payload divalidasi server-side; tipe transaksi enum (`income`, `expense`),
 
 ### `users`
 
-`id UUID PK`, `email UNIQUE`, `created_at`.
+`id UUID PK`, `google_subject UNIQUE`, `email`, `display_name`, `created_at`. Google subject adalah identitas stabil; email dapat berubah.
 
 ### `categories`
 
@@ -113,7 +113,7 @@ Index awal: `(user_id, occurred_at DESC)`, `(user_id, type, occurred_at DESC)`, 
 }
 ```
 
-Schema response ketat. Field yang tidak dikenal ditolak/dibuang, nominal dinormalisasi tanpa floating point, tanggal memakai zona waktu akun (default Asia/Jakarta sampai ada setting), kategori harus cocok ke katalog, dan teks input diperlakukan sebagai data yang tidak tepercaya. Orchestrator tidak dapat memanggil tool SQL atau melakukan write sendiri.
+Schema response ketat. Field yang tidak dikenal ditolak/dibuang, nominal dinormalisasi tanpa floating point, tanggal memakai zona waktu akun (default Asia/Jakarta sampai ada setting), kategori harus cocok ke katalog, dan teks input diperlakukan sebagai data yang tidak tepercaya. Orchestrator tidak dapat memanggil tool SQL arbitrer atau melakukan write sendiri.
 
 ## 8. Keamanan dan privasi
 
@@ -124,7 +124,13 @@ Schema response ketat. Field yang tidak dikenal ditolak/dibuang, nominal dinorma
 - Batasi ukuran input, validasi output LLM, dan anggap teks transaksi sebagai untrusted prompt content.
 - CSV di-escape agar konten transaksi tidak dieksekusi sebagai formula spreadsheet.
 
-## 9. Tahapan implementasi
+## 9. Tanya jawab AI atas database
+
+AI memiliki dua peran produk yang jelas: (1) menyusun draft transaksi dari input, dan (2) menjawab pertanyaan tentang transaksi pengguna. Untuk Q&A, model hanya memilih intent dari katalog yang diizinkan (mis. total pengeluaran per kategori/periode, transaksi terbaru, perbandingan bulan), bukan menulis SQL bebas. Backend memvalidasi parameter, menambahkan `user_id` dari sesi, menjalankan query read-only dengan timeout dan limit, lalu memberikan hasil agregat minimum kepada model untuk diringkas. Jawaban harus menyebut periode yang dipakai; jika data tidak cukup, AI menyatakannya. Tidak boleh membaca data pengguna lain, mengubah transaksi, mengirim query DDL/DML, atau mengklaim angka yang tidak terdapat di hasil query.
+
+`.env.example` memuat nama variabel tanpa secret; `.env` masuk `.gitignore`. Dokumentasikan tiap provider setting, model, dan endpoint base URL. Validasi konfigurasi saat startup dan beri error yang jelas saat belum tersedia. Jangan meneruskan `DATABASE_URL` atau kredensial database ke provider AI.
+
+## 10. Tahapan implementasi
 
 1. Bekukan jawaban pertanyaan terbuka PRD dan pilih stack/auth/hosting.
 2. Bangun shell web, auth, skema/migrasi, dan query user-scoped.
@@ -132,7 +138,10 @@ Schema response ketat. Field yang tidak dikenal ditolak/dibuang, nominal dinorma
 4. Tambahkan dashboard, pencarian, edit/delete, ekspor.
 5. Uji kegunaan, akurasi pada dataset contoh, aksesibilitas, serta isolasi data sebelum rilis.
 
-## 10. Keputusan yang belum final
+## 11. Keputusan yang sudah ditetapkan dan terbuka
 
-Provider/model parser, aturan retensi source text, strategi timezone per user, deployment, provider auth, dan apakah kategori bisa dikustomisasi. Jangan menulis implementasi yang mengunci keputusan ini tanpa kebutuhan.
+**Sudah ditetapkan:** multi-user tanpa shared wallet, Bahasa Indonesia dan IDR untuk MVP, Google login, PostgreSQL, hosting lokal sementara, serta provider AI configurable dan OpenAI-compatible.
+
+**Masih terbuka:** adapter API OpenAI-compatible yang dipakai (Chat Completions atau Responses), aturan retensi source text, konfigurasi timezone per user (default Asia/Jakarta), dan apakah kategori bisa dikustomisasi. Jangan menulis implementasi yang mengunci keputusan terbuka tanpa kebutuhan.
+
 
