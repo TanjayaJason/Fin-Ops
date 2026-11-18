@@ -9,3 +9,4 @@
 - Jangan menambahkan integrasi bank, pembayaran, atau nasihat finansial tanpa perubahan scope produk yang disetujui.
 - Jangan menyimpan secret, data transaksi contoh riil, atau payload sensitif ke repository/log.
 - Perbarui dokumen terkait jika keputusan produk atau API berubah.
+- AI Q&A hanya boleh memilih intent query baca yang disediakan backend; backend harus membatasi semua query ke user dari sesi.

@@ -44,7 +44,8 @@ Pencatatan manual terasa lambat karena pengguna harus membuka banyak kolom dan m
 4. Klasifikasi jenis (income/expense), nominal IDR, tanggal, kategori, catatan, dan metode pembayaran opsional.
 5. Simpan, edit, hapus, pencarian/filter sederhana, dan ekspor CSV.
 6. Kategori bawaan yang dapat dipilih; pengguna dapat mengubah kategori sebelum menyimpan.
-7. Penanganan input tidak jelas dengan pertanyaan singkat atau form koreksi.\n8. Tanya jawab Bahasa Indonesia atas data keuangan milik pengguna yang sedang login, dengan query baca saja dan jawaban bersumber dari hasil query database.
+7. Penanganan input tidak jelas dengan pertanyaan singkat atau form koreksi.
+8. Tanya jawab Bahasa Indonesia atas data keuangan milik pengguna yang sedang login, dengan query baca saja dan jawaban bersumber dari hasil query database.
 
 ### Tidak termasuk
 
@@ -62,7 +63,9 @@ Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, 
 - **FR-8 Ekspor:** pengguna dapat mengunduh transaksi miliknya dalam CSV.
 - **FR-9 Isolasi:** setiap query dan mutasi data terikat pada pengguna yang terautentikasi melalui Google. Tanya jawab AI hanya dapat membaca data milik pengguna tersebut.
 
-- **FR-10 Tanya jawab:** pengguna dapat bertanya dalam Bahasa Indonesia tentang transaksi dan ringkasannya. AI menerjemahkan pertanyaan menjadi intent/query terstruktur yang diizinkan, backend menjalankan query baca saja dalam scope user aktif, dan AI merangkum hasilnya. AI tidak menjalankan SQL bebas, tidak membaca akun lain, dan tidak mengubah data lewat percakapan.\n\n## 6. Kebutuhan nonfungsional
+- **FR-10 Tanya jawab:** pengguna dapat bertanya dalam Bahasa Indonesia tentang transaksi dan ringkasannya. AI menerjemahkan pertanyaan menjadi intent/query terstruktur yang diizinkan, backend menjalankan query baca saja dalam scope user aktif, dan AI merangkum hasilnya. AI tidak menjalankan SQL bebas, tidak membaca akun lain, dan tidak mengubah data lewat percakapan.
+
+## 6. Kebutuhan nonfungsional
 
 - UI responsif dan dapat digunakan dengan keyboard; form memiliki label dan status error yang jelas.
 - Respons parsing target p95 < 4 detik (sasaran awal, diukur setelah implementasi).
@@ -94,11 +97,7 @@ Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, 
 - **Data keuangan terekspos:** autentikasi, otorisasi per query, HTTPS, minimisasi log, backup dan kebijakan retensi.
 - **Scope membesar:** pertahankan batas MVP; integrasi bank dan budgeting ditunda.
 
-## 10. Pertanyaan terbuka
+## 10. Keputusan implementasi
 
-1. Apakah aplikasi hanya untuk satu pengguna/akun pribadi atau perlu multi-user sejak awal?
-2. Apakah Bahasa Indonesia dan IDR menjadi satu-satunya locale/currency pada MVP?
-3. Apakah pengguna menginginkan login email/password, Google login, atau keduanya?
-4. Apakah provider AI tertentu sudah dipilih, atau parser awal sebaiknya lokal/deterministik?
-5. Target deployment/hosting dan preferensi database apa yang sudah tersedia?
+MVP memakai React/Vite, FastAPI/Python, PostgreSQL lokal, Google OAuth, Bahasa Indonesia dan IDR. AI memakai endpoint Chat Completions yang OpenAI-compatible melalui konfigurasi `.env`.
 

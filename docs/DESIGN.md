@@ -53,18 +53,21 @@ Label form eksplisit, fokus keyboard terlihat, validasi tidak hanya memakai warn
 
 ## 4. Arsitektur awal
 
-**Stack awal:** Next.js/TypeScript untuk UI dan API, PostgreSQL lokal untuk database, Google OAuth untuk login, session cookie yang aman. MVP menggunakan Bahasa Indonesia (`id-ID`) dan IDR saja. UI boleh multi-user, tetapi setiap user hanya melihat ledger pribadinya; shared wallet tidak termasuk.
+**Stack awal:** React/Vite untuk UI dan FastAPI/Python untuk API, PostgreSQL lokal untuk database, Google OAuth untuk login, session cookie yang aman. MVP menggunakan Bahasa Indonesia (`id-ID`) dan IDR saja. UI boleh multi-user, tetapi setiap user hanya melihat ledger pribadinya; shared wallet tidak termasuk.
 
 ```text
 Browser UI
-  ├─ POST /api/assistant/query ────> Read-only finance Q&A orchestrator\n  │                                  └─ allowlisted query service → PostgreSQL\n  ├─ POST /api/transactions/parse ─> Expense Orchestrator
+  ├─ POST /api/assistant/query ────> Read-only finance Q&A orchestrator
+  │                                  └─ allowlisted query service → PostgreSQL
+  ├─ POST /api/transactions/parse ─> Expense Orchestrator
   │                                  ├─ deterministic amount/date parsing
   │                                  ├─ optional LLM category suggestion
   │                                  └─ schema + confidence validation
   ├─ POST /api/transactions ────────> API validation + authz
   └─ GET/PATCH/DELETE /api/transactions
                     │
-                 PostgreSQL\n      (all records user-scoped)
+                 PostgreSQL
+      (all records user-scoped)
 ```
 
 Orchestrator berjalan di backend; kunci provider tidak pernah dikirim ke browser. Parsing dan penyimpanan adalah dua operasi berbeda. Parse tidak menulis ledger. Create menerima payload hasil tinjauan pengguna dan mengotorisasi ulang semua data.
@@ -142,6 +145,8 @@ AI memiliki dua peran produk yang jelas: (1) menyusun draft transaksi dari input
 
 **Sudah ditetapkan:** multi-user tanpa shared wallet, Bahasa Indonesia dan IDR untuk MVP, Google login, PostgreSQL, hosting lokal sementara, serta provider AI configurable dan OpenAI-compatible.
 
-**Masih terbuka:** adapter API OpenAI-compatible yang dipakai (Chat Completions atau Responses), aturan retensi source text, konfigurasi timezone per user (default Asia/Jakarta), dan apakah kategori bisa dikustomisasi. Jangan menulis implementasi yang mengunci keputusan terbuka tanpa kebutuhan.
+**Masih terbuka:** aturan retensi source text, konfigurasi timezone per user (default Asia/Jakarta), dan apakah kategori bisa dikustomisasi. Jangan menulis implementasi yang mengunci keputusan terbuka tanpa kebutuhan.
+
+
 
 
