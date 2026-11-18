@@ -6,13 +6,13 @@
 
 ## 1. Ringkasan
 
-Fin Ops adalah aplikasi web untuk mencatat transaksi keuangan pribadi melalui input teks sederhana. Pengguna mengetik transaksi dengan bahasa sehari-hari; backend mengubahnya menjadi data terstruktur, mengusulkan jenis dan kategori, lalu menyimpan transaksi setelah validasi. UI menampilkan ringkasan arus kas dan riwayat transaksi.
+Fin Ops adalah aplikasi web multi-user untuk mencatat transaksi keuangan pribadi melalui input teks sederhana. Setiap pengguna memiliki ledger pribadi yang terisolasi. Pengguna mengetik transaksi dengan bahasa sehari-hari; backend mengubahnya menjadi data terstruktur, mengusulkan jenis dan kategori, lalu menyimpan transaksi setelah validasi. UI menampilkan ringkasan arus kas dan riwayat transaksi.
 
 Contoh input: `kopi 28rb tadi pagi pakai gopay`. Hasil yang diusulkan: pengeluaran Rp28.000, kategori Makanan & Minuman, waktu hari ini, metode GoPay. Jika nominal atau arti input tidak jelas, sistem meminta pengguna memperbaikinya sebelum disimpan.
 
 ## 2. Masalah dan tujuan
 
-Pencatatan manual terasa lambat karena pengguna harus membuka banyak kolom dan memilih kategori setiap kali. Bot chat saja tidak menyediakan pengalaman dashboard yang mudah ditinjau atau dikoreksi.
+Pencatatan manual terasa lambat karena pengguna harus membuka banyak kolom dan memilih kategori setiap kali. Bot chat saja tidak menyediakan pengalaman ringkasan dan riwayat yang mudah ditinjau atau dikoreksi.
 
 **Tujuan MVP:**
 
@@ -20,13 +20,13 @@ Pencatatan manual terasa lambat karena pengguna harus membuka banyak kolom dan m
 - Mengklasifikasikan transaksi dan mengubah ungkapan nominal/tanggal menjadi nilai terstruktur.
 - Meminta konfirmasi untuk hasil yang ambigu atau berkeyakinan rendah.
 - Menyimpan transaksi secara konsisten dan menampilkan ringkasan serta riwayat yang dapat dikoreksi.
-- Menjaga data tiap akun terisolasi dan menyediakan ekspor data.
+- Mendukung banyak pengguna dengan login Google, menjaga data tiap akun terisolasi, serta menyediakan ekspor data.
 
-**Bukan tujuan MVP:** koneksi rekening/bank, pembayaran atau transfer, nasihat investasi, anggaran otomatis kompleks, multi-mata-uang, dan chatbot percakapan umum.
+**Bukan tujuan MVP:** koneksi rekening/bank, pembayaran atau transfer, nasihat investasi, anggaran otomatis kompleks, multi-mata-uang (MVP hanya IDR), dan chatbot percakapan umum.
 
 ## 3. Pengguna dan kebutuhan
 
-**Pengguna utama:** individu yang ingin membangun kebiasaan mencatat keuangan tanpa mengisi formulir panjang.
+**Pengguna utama:** beberapa individu yang masing-masing ingin mencatat keuangan pribadi tanpa mengisi formulir panjang. Akun dan data tiap pengguna terpisah; berbagi wallet belum termasuk MVP.
 
 - Sebagai pengguna, saya ingin menulis transaksi dengan bahasa alami agar pencatatan cepat.
 - Saya ingin melihat kategori dan nominal sebelum data ambigu masuk ke laporan.
@@ -38,21 +38,21 @@ Pencatatan manual terasa lambat karena pengguna harus membuka banyak kolom dan m
 
 ### Termasuk
 
-1. Akun pengguna dan autentikasi.
+1. Banyak akun pengguna dengan autentikasi Google (OAuth).
 2. Dashboard dengan pemasukan, pengeluaran, arus bersih, serta transaksi terbaru untuk bulan berjalan.
 3. Form input teks transaksi; hasil parser ditampilkan sebagai pratinjau yang bisa diedit.
 4. Klasifikasi jenis (income/expense), nominal IDR, tanggal, kategori, catatan, dan metode pembayaran opsional.
 5. Simpan, edit, hapus, pencarian/filter sederhana, dan ekspor CSV.
 6. Kategori bawaan yang dapat dipilih; pengguna dapat mengubah kategori sebelum menyimpan.
-7. Penanganan input tidak jelas dengan pertanyaan singkat atau form koreksi.
+7. Penanganan input tidak jelas dengan pertanyaan singkat atau form koreksi.\n8. Tanya jawab Bahasa Indonesia atas data keuangan milik pengguna yang sedang login, dengan query baca saja dan jawaban bersumber dari hasil query database.
 
 ### Tidak termasuk
 
-Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, anggaran, target tabungan, multi-user/shared wallet, notifikasi, aplikasi mobile native.
+Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, anggaran, target tabungan, shared wallet, multi-mata-uang, notifikasi, aplikasi mobile native.
 
 ## 5. Kebutuhan fungsional
 
-- **FR-1 Input:** pengguna dapat memasukkan kalimat transaksi dalam Bahasa Indonesia atau mengisi form terstruktur.
+- **FR-1 Input:** pengguna dapat memasukkan kalimat transaksi dalam Bahasa Indonesia (locale MVP `id-ID`) atau mengisi form terstruktur; mata uang MVP hanya IDR.
 - **FR-2 Parsing:** sistem mengekstrak arah transaksi, nominal dalam rupiah, tanggal, deskripsi, kategori kandidat, dan metode pembayaran jika disebut.
 - **FR-3 Validasi:** nominal wajib positif dan eksplisit; tanggal tanpa tahun ditafsirkan dalam tahun berjalan dan ditampilkan; nominal yang tidak dapat dipastikan tidak boleh disimpan diam-diam.
 - **FR-4 Konfirmasi:** sistem menampilkan pratinjau yang bisa diedit sebelum transaksi disimpan. Kategori/jenis berkeyakinan rendah atau nominal tidak jelas harus ditanyakan.
@@ -60,9 +60,9 @@ Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, 
 - **FR-6 Ringkasan:** dashboard menghitung total income, expense, net cash flow, dan daftar transaksi menurut periode.
 - **FR-7 Koreksi:** pengguna dapat mengedit dan menghapus transaksi miliknya; ringkasan mengikuti perubahan.
 - **FR-8 Ekspor:** pengguna dapat mengunduh transaksi miliknya dalam CSV.
-- **FR-9 Isolasi:** setiap query dan mutasi data terikat pada pengguna yang terautentikasi.
+- **FR-9 Isolasi:** setiap query dan mutasi data terikat pada pengguna yang terautentikasi melalui Google. Tanya jawab AI hanya dapat membaca data milik pengguna tersebut.
 
-## 6. Kebutuhan nonfungsional
+- **FR-10 Tanya jawab:** pengguna dapat bertanya dalam Bahasa Indonesia tentang transaksi dan ringkasannya. AI menerjemahkan pertanyaan menjadi intent/query terstruktur yang diizinkan, backend menjalankan query baca saja dalam scope user aktif, dan AI merangkum hasilnya. AI tidak menjalankan SQL bebas, tidak membaca akun lain, dan tidak mengubah data lewat percakapan.\n\n## 6. Kebutuhan nonfungsional
 
 - UI responsif dan dapat digunakan dengan keyboard; form memiliki label dan status error yang jelas.
 - Respons parsing target p95 < 4 detik (sasaran awal, diukur setelah implementasi).
@@ -90,7 +90,7 @@ Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, 
 ## 9. Risiko dan mitigasi
 
 - **Salah tafsir nominal/kategori:** pratinjau wajib, edit cepat, confidence untuk triase, dan jalur form manual.
-- **Provider AI gagal/mahal:** parser deterministik untuk pola sederhana, provider dibatasi di server, fallback manual.
+- **Provider AI gagal/mahal atau jawabannya keliru:** parser deterministik untuk pola sederhana, provider dibatasi di server, fallback manual.
 - **Data keuangan terekspos:** autentikasi, otorisasi per query, HTTPS, minimisasi log, backup dan kebijakan retensi.
 - **Scope membesar:** pertahankan batas MVP; integrasi bank dan budgeting ditunda.
 
@@ -101,3 +101,4 @@ Integrasi bank/e-wallet, OCR struk, recurring transaction, pembagian transaksi, 
 3. Apakah pengguna menginginkan login email/password, Google login, atau keduanya?
 4. Apakah provider AI tertentu sudah dipilih, atau parser awal sebaiknya lokal/deterministik?
 5. Target deployment/hosting dan preferensi database apa yang sudah tersedia?
+

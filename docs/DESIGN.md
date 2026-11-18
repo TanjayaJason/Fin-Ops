@@ -53,18 +53,18 @@ Label form eksplisit, fokus keyboard terlihat, validasi tidak hanya memakai warn
 
 ## 4. Arsitektur awal
 
-**Usulan stack:** Next.js/TypeScript untuk UI dan API, PostgreSQL untuk database, autentikasi berbasis session dari penyedia yang sesuai deployment. Pilihan ini usulan, bukan keputusan final.
+**Stack awal:** Next.js/TypeScript untuk UI dan API, PostgreSQL lokal untuk database, Google OAuth untuk login, session cookie yang aman. MVP menggunakan Bahasa Indonesia (`id-ID`) dan IDR saja. UI boleh multi-user, tetapi setiap user hanya melihat ledger pribadinya; shared wallet tidak termasuk.
 
 ```text
 Browser UI
-  ├─ POST /api/transactions/parse ─> Expense Orchestrator
+  ├─ POST /api/assistant/query ────> Read-only finance Q&A orchestrator\n  │                                  └─ allowlisted query service → PostgreSQL\n  ├─ POST /api/transactions/parse ─> Expense Orchestrator
   │                                  ├─ deterministic amount/date parsing
   │                                  ├─ optional LLM category suggestion
   │                                  └─ schema + confidence validation
   ├─ POST /api/transactions ────────> API validation + authz
   └─ GET/PATCH/DELETE /api/transactions
                     │
-                 PostgreSQL
+                 PostgreSQL\n      (all records user-scoped)
 ```
 
 Orchestrator berjalan di backend; kunci provider tidak pernah dikirim ke browser. Parsing dan penyimpanan adalah dua operasi berbeda. Parse tidak menulis ledger. Create menerima payload hasil tinjauan pengguna dan mengotorisasi ulang semua data.
@@ -135,3 +135,4 @@ Schema response ketat. Field yang tidak dikenal ditolak/dibuang, nominal dinorma
 ## 10. Keputusan yang belum final
 
 Provider/model parser, aturan retensi source text, strategi timezone per user, deployment, provider auth, dan apakah kategori bisa dikustomisasi. Jangan menulis implementasi yang mengunci keputusan ini tanpa kebutuhan.
+
