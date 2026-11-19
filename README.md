@@ -1,28 +1,100 @@
-# Fin Ops (F-Ops)
+# Fin Ops
 
-Aplikasi web multi-user untuk mencatat pemasukan dan pengeluaran dalam Bahasa Indonesia dan rupiah. Frontend React menampilkan input cepat, ringkasan bulanan, riwayat, serta halaman tanya jawab. Backend FastAPI memakai PostgreSQL, login Google, dan provider AI yang kompatibel dengan OpenAI Chat Completions.
+Catat transaksi dengan kalimat biasa, periksa hasilnya, lalu simpan. Fin Ops menampilkan pemasukan dan pengeluaran bulan berjalan, riwayat transaksi, dan jawaban atas pertanyaan tentang data akun Anda.
 
-AI memiliki dua peran: mengusulkan draft transaksi dari teks dan memilih query baca untuk menjawab pertanyaan tentang data akun yang sedang login. Pengguna memeriksa draft sebelum menyimpan. Jika AI belum dikonfigurasi, input transaksi sederhana tetap dapat diproses dengan aturan dasar atau diisi manual; fitur Tanya AI memerlukan provider.
+Aplikasi berjalan di komputer lokal. Setiap pengguna masuk dengan akun Google dan memiliki transaksi sendiri.
 
-## Menjalankan di lokal
+## Yang bisa dilakukan
 
-Prasyarat: Node.js 20.19+ atau 22.12+, Python 3.11+, dan Docker dengan Compose. Gunakan hostname `localhost` untuk frontend dan backend.
+| Fitur | Cara kerja |
+| --- | --- |
+| Catat transaksi | Tulis, misalnya, `kopi 28rb tadi pagi pakai gopay`. Periksa jenis, nominal, tanggal, dan kategori sebelum menyimpan. Form manual tersedia jika parser tidak membantu. |
+| Lihat ringkasan | Dashboard menghitung pemasukan, pengeluaran, dan arus bersih bulan berjalan. |
+| Kelola riwayat | Buka daftar transaksi untuk mengedit, menghapus, atau mengunduh CSV. |
+| Tanya AI | Ajukan pertanyaan tentang total, kategori, tren bulanan, atau transaksi terbaru. Backend hanya membaca data akun yang sedang masuk. |
 
-1. Salin `.env.example` menjadi `.env`. Isi `SESSION_SECRET` dengan nilai acak panjang, misalnya dari `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
-2. Buat OAuth client bertipe **Web application** di Google Cloud. Tambahkan `http://localhost:8000/api/auth/callback` sebagai **Authorized redirect URI** dan `http://localhost:5173` sebagai **Authorized JavaScript origin**. Isi `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` di `.env`. Bila OAuth consent masih mode testing, masukkan akun Anda sebagai test user.
-3. Isi `AI_BASE_URL`, `AI_API_KEY`, dan `AI_MODEL` di `.env` untuk provider OpenAI-compatible. `AI_BASE_URL` berakhir di path versi API, misalnya `https://api.openai.com/v1`. Provider harus menyediakan endpoint `/chat/completions`. Nilai ini opsional untuk pencatatan manual, tetapi wajib untuk fitur Tanya AI.
-4. Jalankan PostgreSQL: `docker compose up -d db`.
-5. Di terminal backend: `python -m venv backend/.venv`, aktifkan virtual environment (`backend/.venv/Scripts/Activate.ps1` pada PowerShell), lalu `pip install -r backend/requirements.txt` dan `uvicorn backend.main:app --reload --port 8000` dari root repo.
-6. Di terminal frontend: `cd frontend`, jalankan `npm install` lalu `npm run dev`.
-7. Buka [http://localhost:5173](http://localhost:5173), login dengan Google, lalu coba input `kopi 28rb tadi pagi pakai gopay`. Periksa pratinjau dan klik **Simpan transaksi**.
+AI membantu mengurai input dan memilih jenis query untuk fitur Tanya AI. Penyimpanan transaksi tetap dilakukan setelah pengguna menyetujui pratinjau. Fitur Tanya AI memerlukan provider yang menyediakan API Chat Completions kompatibel OpenAI; pertanyaan di luar jenis query yang didukung akan ditolak.
 
-API tersedia di [http://localhost:8000/docs](http://localhost:8000/docs). Database lokal memakai kredensial development pada `compose.yaml`; ganti sebelum mengakses dari jaringan lain. Aplikasi ini dikonfigurasi untuk penggunaan lokal dan belum memiliki migrasi database atau deployment produksi.
+## Teknologi
 
-## Struktur repo
+- **Web:** React dan Vite
+- **API:** Python dan FastAPI
+- **Database:** PostgreSQL
+- **Login:** Google OAuth
+- **AI:** endpoint `/chat/completions` dengan base URL, model, dan API key dari `.env`
 
-- `frontend/`: React + Vite.
-- `backend/`: FastAPI, OAuth, transaksi, orchestrator AI, dan query data.
-- `compose.yaml`: PostgreSQL lokal.
-- `docs/PRD.md`: kebutuhan produk.
-- `docs/DESIGN.md`: desain UI dan arsitektur.
-- `AGENTS.md`, `.github/agents/`, `.agents/skills/`: instruksi agent dan skill proyek.
+## Jalankan di lokal
+
+Siapkan Node.js 20.19+ atau 22.12+, Python 3.11+, dan Docker Compose. Perintah berikut dijalankan dari root repo, kecuali langkah frontend.
+
+### 1. Konfigurasi
+
+Salin `.env.example` menjadi `.env`:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Isi nilai berikut di `.env`:
+
+| Variabel | Kegunaan |
+| --- | --- |
+| `SESSION_SECRET` | Kunci sesi. Buat string acak panjang; jangan gunakan nilai contoh. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Kredensial OAuth Google untuk login. |
+| `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` | Provider AI. Boleh dibiarkan kosong bila hanya memakai input manual atau parser aturan dasar. Tanya AI memerlukannya. |
+| `DATABASE_URL` | Koneksi PostgreSQL. Nilai contoh cocok dengan `compose.yaml`. |
+
+Buat OAuth client bertipe Web application di Google Cloud. Gunakan `http://localhost:8000/api/auth/callback` sebagai *Authorized redirect URI* dan `http://localhost:5173` sebagai *Authorized JavaScript origin*. Jika consent screen masih dalam mode testing, tambahkan akun yang akan dipakai sebagai test user.
+
+Untuk membuat `SESSION_SECRET`:
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+### 2. Nyalakan database
+
+```powershell
+docker compose up -d db
+```
+
+### 3. Jalankan API
+
+Buka terminal PowerShell dari root repo:
+
+```powershell
+python -m venv backend/.venv
+backend/.venv/Scripts/Activate.ps1
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload --port 8000
+```
+
+### 4. Jalankan web
+
+Buka terminal kedua:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Buka [http://localhost:5173](http://localhost:5173). Masuk dengan Google, tulis contoh transaksi di atas, periksa pratinjau, lalu pilih **Simpan transaksi**. Dokumentasi API tersedia di [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Gunakan hostname `localhost` untuk kedua layanan agar alur login dan sesi bekerja sesuai konfigurasi contoh.
+
+## Susunan repo
+
+```text
+backend/                 API, login, transaksi, dan alur AI
+frontend/                UI React
+compose.yaml             PostgreSQL lokal
+.env.example             Contoh konfigurasi tanpa secret
+docs/PRD.md              Kebutuhan produk
+docs/DESIGN.md           Desain UI dan arsitektur
+AGENTS.md                Aturan kerja di repo
+.github/agents/          Definisi agent
+.agents/skills/          Skill proyek
+```
+
+Aplikasi saat ini disiapkan untuk penggunaan lokal. Migrasi database dan konfigurasi deployment produksi belum tersedia. Kredensial database di `compose.yaml` hanya untuk development lokal.
